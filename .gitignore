@@ -1,0 +1,9 @@
+# elm-package generated files
+elm-stuff
+# elm-repl generated files
+repl-temp-*
+# For mac finder settings
+.DS_Store
+
+# Ignore whole of .idea directory, including all subfolders and files.
+/.idea/**/*

@@ -32,6 +32,7 @@ ukChoropleth =
       << color
         [ mName "id"
         , mNominal
+        , mLegend []
         ]
   in
   toVegaLite

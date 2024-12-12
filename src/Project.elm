@@ -5,8 +5,11 @@ import VegaLite exposing (..)
 
 
 -- DATA
-localAuthorityData : String
-localAuthorityData = "https://martinjc.github.io/UK-GeoJSON/json/eng/topo_lad.json"
+topoJson : String
+topoJson = "https://media.githubusercontent.com/media/Supermarcel10/CSG-IN3030/refs/heads/main/data/minified-EN_topo.json"
+
+dataCsv : String
+dataCsv = "https://media.githubusercontent.com/media/Supermarcel10/CSG-IN3030/refs/heads/main/data/minified-RM080-2021-1.csv"
 
 
 
@@ -15,7 +18,7 @@ ukChoropleth : Spec
 ukChoropleth =
   let
     geographyData =
-      dataFromUrl localAuthorityData
+      dataFromUrl topoJson
       [ topojsonFeature "lad" ]
 
     projectionSettings =

@@ -28,6 +28,49 @@ The cleanup does the following:
 **File size**:
 53.42M -> 1.61M (51.80M / 97.0% reduction)
 
+### Numerical Bindings
+Each column is represented by a numerical value, similar to how an enum represents data in many popular languages.
+This section of the document definees the bindings between those numerical values and their original meaning.
+
+#### `english_proficiency` Column
+
+| Value | Meaning                                                                                                     |
+|------:|:------------------------------------------------------------------------------------------------------------|
+|     1 | Main language is English (English or Welsh in Wales)                                                        |
+|     2 | Main language is not English (English or Welsh in Wales)                                                    |
+|     3 | Main language is not English (English or Welsh in Wales): Cannot speak English or cannot speak English well |
+
+#### `industry` Column
+
+| Value | Meaning                                                                       |
+|------:|:------------------------------------------------------------------------------|
+|     1 | A, B, D, E Agriculture, energy and water                                      |
+|     2 | C Manufacturing                                                               |
+|     3 | F Construction                                                                |
+|     4 | G, I Distribution, hotels and restaurants                                     |
+|     5 | H, J Transport and communication                                              |
+|     6 | K, L, M, N Financial, real estate, professional and administrative activities |
+|     7 | O, P, Q Public administration, education and health                           |
+|     8 | R, S, T, U Other                                                              |
+
+#### `qualification` Column
+
+| Value | Meaning                                                                                                                                                                                                                                                                                                                              |
+|------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|     0 | No qualifications                                                                                                                                                                                                                                                                                                                    |
+|     1 | Level 1 and entry level qualifications: 1 to 4 GCSEs grade A* to C, Any GCSEs at other grades, O levels or CSEs (any grades), 1 AS level, NVQ level 1, Foundation GNVQ, Basic or Essential Skills                                                                                                                                    |
+|     2 | Level 2 qualifications: 5 or more GCSEs (A* to C or 9 to 4), O levels (passes), CSEs (grade 1), School Certification, 1 A level, 2 to 3 AS levels, VCEs, Intermediate or Higher Diploma, Welsh Baccalaureate Intermediate Diploma, NVQ level 2, Intermediate GNVQ, City and Guilds Craft, BTEC First or General Diploma, RSA Diploma |
+|     3 | Level 3 qualifications: 2 or more A levels or VCEs, 4 or more AS levels, Higher School Certificate, Progression or Advanced Diploma, Welsh Baccalaureate Advance Diploma, NVQ level 3; Advanced GNVQ, City and Guilds Advanced Craft, ONC, OND, BTEC National, RSA Advanced Diploma                                                  |
+|     4 | Level 4 qualifications or above: degree (BA, BSc), higher degree (MA, PhD, PGCE), NVQ level 4 to 5, HNC, HND, RSA Higher Diploma, BTEC Higher level, professional qualifications (for example, teaching, nursing, accountancy)                                                                                                       |
+|     5 | Other: apprenticeships, vocational or work-related qualifications, other qualifications achieved in England or Wales, qualifications achieved outside England or Wales (equivalent not stated or unknown)                                                                                                                            |
+
+#### `deprivation` Column
+| Value | Meaning                                               |
+|------:|:------------------------------------------------------|
+|     0 | Household is not deprived in the employment dimension |
+|     1 | Household is deprived in the employment dimension     |
+
+
 ### Setup
 
 1. Set up a python virtual environment.

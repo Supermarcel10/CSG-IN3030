@@ -104,5 +104,5 @@ def cleanup_json(input_file, output_file):
 
 
 if __name__ == "__main__":
-    cleanup_csv("../data/RM080-2021-1.csv", "../data/minified.csv")
+    cleanup_csv("../data/RM080-2021-1.csv", "../data/minified-RM080-2021-1.csv")
     cleanup_json("../data/EN_topo.json", "../data/minified-EN_topo.json")

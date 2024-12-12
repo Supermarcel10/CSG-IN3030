@@ -1,4 +1,5 @@
 import pandas as pd
+import json
 import os
 
 
@@ -7,28 +8,27 @@ def get_file_size_mb(file_path):
     return size_bytes / (1024 * 1024)  # B -> KB -> MB
 
 
-def print_stats(len_original_rows, len_processed_rows, original_size_mb, processed_size_mb):
-    len_removed_rows = len_original_rows - len_processed_rows
-    removed_rows_perc = len_removed_rows / len_original_rows * 100
+def print_stats(name="", len_original_lines=0, len_processed_lines=0, original_size_mb=0.0, processed_size_mb=0.0):
+    if name == "":
+        print(f"\nProcessing complete!")
+    else:
+        print(f"\n{name} complete!")
 
-    size_diff = original_size_mb - processed_size_mb
-    size_diff_perc = size_diff / original_size_mb * 100
+    if (len_original_lines != 0) & (len_processed_lines != 0):
+        len_removed_lines = len_original_lines - len_processed_lines
+        removed_lines_perc = len_removed_lines / len_original_lines * 100
 
-    print(f"""
-Processing complete!
+        print(f"Lines: {len_processed_lines}/{len_original_lines} ({len_removed_lines} lines / {removed_lines_perc:.1f}% removed)")
 
-Rows:
-{len_processed_rows}/{len_original_rows} ({len_removed_rows} rows / {removed_rows_perc:.1f}% removed)
+    if (original_size_mb != 0) & (processed_size_mb != 0):
+        size_diff = original_size_mb - processed_size_mb
+        size_diff_perc = size_diff / original_size_mb * 100
 
-File size:
-{processed_size_mb:.2f}M/{original_size_mb:.2f}M ({size_diff:.2f}M / {size_diff_perc:.1f}% reduction)
-""")
+        print(f"File size: {processed_size_mb:.2f}M/{original_size_mb:.2f}M ({size_diff:.2f}M / {size_diff_perc:.1f}% reduction)")
 
 
-def cleanup(input_file, output_file):
+def cleanup_csv(input_file, output_file):
     try:
-        original_size_mb = get_file_size_mb(input_file)
-
         df = pd.read_csv(input_file)
         len_original_rows = len(df)
 
@@ -63,9 +63,10 @@ def cleanup(input_file, output_file):
 
         df.to_csv(output_file, index=False)
 
+        original_size_mb = get_file_size_mb(input_file)
         processed_size_mb = get_file_size_mb(output_file)
 
-        print_stats(len_original_rows, len(df), original_size_mb, processed_size_mb)
+        print_stats("Cleanup CSV", len_original_rows, len(df), original_size_mb, processed_size_mb)
 
     except FileNotFoundError:
         print(f"Error: Could not find the input file '{input_file}'")
@@ -75,5 +76,33 @@ def cleanup(input_file, output_file):
         print(f"An error occurred: {str(e)}")
 
 
+def cleanup_json(input_file, output_file):
+    def remove_properties(obj):
+        if isinstance(obj, dict):
+            obj.pop("properties", None)
+
+            for value in obj.values():
+                remove_properties(value)
+        elif isinstance(obj, list):
+            for item in obj:
+                remove_properties(item)
+        return obj
+
+    with open(input_file, "r") as f:
+        data = json.load(f)
+
+    # Strip properties using recursion
+    stripped_data = remove_properties(data)
+
+    with open(output_file, "w") as f:
+        json.dump(stripped_data, f)
+
+    original_size_mb = get_file_size_mb(input_file)
+    processed_size_mb = get_file_size_mb(output_file)
+
+    print_stats("Cleanup JSON", original_size_mb=original_size_mb, processed_size_mb=processed_size_mb)
+
+
 if __name__ == "__main__":
-    cleanup("../data/RM080-2021-1.csv", "../data/minified.csv")
+    cleanup_csv("../data/RM080-2021-1.csv", "../data/minified.csv")
+    cleanup_json("../data/EN_topo.json", "../data/minified-EN_topo.json")

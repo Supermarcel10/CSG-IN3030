@@ -7,6 +7,8 @@
   * [Filtering Data](#filtering-data)
     * [Information](#information)
     * [Cleanup Results](#cleanup-results)
+      * [Data CSV](#data-csv)
+      * [Topo JSON](#topo-json)
     * [Numerical Bindings](#numerical-bindings)
       * [`english_proficiency` Column](#english_proficiency-column)
       * [`industry` Column](#industry-column)
@@ -17,7 +19,7 @@
 
 ## Filtering Data
 ### Information
-The original data (53.42M) is too large for Elm-Litvis ability to even load the data.
+The original data CSV (53.42M) is too large for Elm-Litvis ability to even load the data.
 While attempting to just load the data without plotting anything, Visual Studio Code froze and produced no graph, and on 2 occasions even crashed outright.
 
 For this reason I have used a separate script to remove a lot of unnecessary data.
@@ -27,11 +29,20 @@ The cleanup does the following:
 - Removes all unnecessary/duplicate columns
 - Removes all "not applicable" data which is pointless for the visualsation
 
+In addition to cleaning and filtering the CSV data, I have taken this opportunity to filter the topography JSON file to ensure better performance.
+I have removed all properties, since they will be unused, and I have removed breaklines and indentation.
+This reduces the file size and character count by a drastic amount in hopes that Elm-Litvis will handle this data a lot smoother.
+
 ### Cleanup Results
+#### Data CSV
 **Rows**:
 157248 -> 50253 (106995 rows / 68.0% removed)<br/>
 **File size**:
 53.42M -> 1.61M (51.80M / 97.0% reduction)
+
+#### Topo JSON
+**File size**:
+5.32M -> 1.22M (4.10M / 77.1% reduction)
 
 ### Numerical Bindings
 Each column is represented by a numerical value, similar to how an enum represents data in many popular languages.
@@ -76,7 +87,7 @@ This section of the document definees the bindings between those numerical value
 |     1 | Household is deprived in the employment dimension     |
 
 
-### Setup
+### Running
 
 1. Set up a python virtual environment.
 2. Install the required dependencies:
@@ -87,4 +98,4 @@ pip install -r requirements.txt
 ```
 python src/data-cleanup.py
 ```
-4. In the `data` directory, a `minified.csv` has been created.
+4. In the `data` directory, a minified versions of the data and json have been creaetd.

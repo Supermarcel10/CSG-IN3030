@@ -7,6 +7,11 @@
   * [Filtering Data](#filtering-data)
     * [Information](#information)
     * [Cleanup Results](#cleanup-results)
+    * [Numerical Bindings](#numerical-bindings)
+      * [`english_proficiency` Column](#english_proficiency-column)
+      * [`industry` Column](#industry-column)
+      * [`qualification` Column](#qualification-column)
+      * [`deprivation` Column](#deprivation-column)
     * [Setup](#setup)
 <!-- TOC -->
 

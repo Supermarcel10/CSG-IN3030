@@ -14,7 +14,7 @@
       * [`industry` Column](#industry-column)
       * [`qualification` Column](#qualification-column)
       * [`deprivation` Column](#deprivation-column)
-    * [Setup](#setup)
+    * [Running](#running)
 <!-- TOC -->
 
 ## Filtering Data
@@ -90,12 +90,21 @@ This section of the document definees the bindings between those numerical value
 ### Running
 
 1. Set up a python virtual environment.
+
 2. Install the required dependencies:
+> [!NOTE]
+> On NixOS run:
+> ```
+> nix-shell && cd src
+> ```
+
 ```
 pip install -r requirements.txt
 ```
+
 3. Run the script:
 ```
 python src/data-cleanup.py
 ```
-4. In the `data` directory, a minified versions of the data and json have been creaetd.
+
+4. In the `data` directory, a minified versions of the data and json have been created.

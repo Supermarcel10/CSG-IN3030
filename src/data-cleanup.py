@@ -1,6 +1,8 @@
 import pandas as pd
 import json
 import os
+from typing import List, Union
+from pathlib import Path
 
 
 def get_file_size_mb(file_path):
@@ -76,7 +78,7 @@ def cleanup_csv(input_file, output_file):
         print(f"An error occurred: {str(e)}")
 
 
-def cleanup_json(input_file, output_file):
+def cleanup_json(input_files: List[Union[str, Path]], output_file: Union[str, Path]):
     def remove_properties(obj):
         if isinstance(obj, dict):
             obj.pop("properties", None)
@@ -88,21 +90,45 @@ def cleanup_json(input_file, output_file):
                 remove_properties(item)
         return obj
 
-    with open(input_file, "r") as f:
-        data = json.load(f)
+    input_files = [Path(p) for p in input_files]
+    output_file = Path(output_file)
 
-    # Strip properties using recursion
-    stripped_data = remove_properties(data)
+    combined_data = []
 
-    with open(output_file, "w") as f:
-        json.dump(stripped_data, f)
+    original_size_mb = 0.0
+    for input_file in input_files:
+        if not input_file.exists():
+            raise FileNotFoundError(f"Input file not found: {input_file}")
 
-    original_size_mb = get_file_size_mb(input_file)
-    processed_size_mb = get_file_size_mb(output_file)
+        try:
+            with input_file.open("r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    combined_data.extend(data)
+                else:
+                    combined_data.append(data)
 
-    print_stats("Cleanup JSON", original_size_mb=original_size_mb, processed_size_mb=processed_size_mb)
+            original_size_mb += get_file_size_mb(input_file)
+        except json.JSONDecodeError as e:
+            raise json.JSONDecodeError(
+                f"Invalid JSON in file {input_file}: {str(e)}",
+                e.doc,
+                e.pos
+            )
+
+    stripped_data = remove_properties(combined_data)
+
+    try:
+        with output_file.open("w", encoding="utf-8") as f:
+            json.dump(stripped_data, f)
+
+        processed_size_mb = get_file_size_mb(output_file)
+
+        print_stats("Cleanup JSON", original_size_mb=original_size_mb, processed_size_mb=processed_size_mb)
+    except PermissionError:
+        raise PermissionError(f"Unable to write to output file: {output_file}")
 
 
 if __name__ == "__main__":
     cleanup_csv("../data/RM080-2021-1.csv", "../data/minified-RM080-2021-1.csv")
-    cleanup_json("../data/EN_topo.json", "../data/minified-EN_topo.json")
+    cleanup_json(["../data/EN_topo.json", "../data/NI_topo.json", "../data/SC_topo.json", "../data/WL_topo.json"], "../data/combined-topo.json")

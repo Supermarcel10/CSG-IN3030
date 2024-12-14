@@ -20,6 +20,12 @@ dataCsv = "https://media.githubusercontent.com/media/Supermarcel10/CSG-IN3030/re
 ukChoropleth : Spec
 ukChoropleth =
   let
+    ps =
+      params
+        << param "scale" [ paValue (num 8000), paBind (ipRange [ inName "Scale", inMin 8000, inMax 40000, inStep 1000 ]) ]
+        << param "cenLambda" [ paValue (num -1), paBind (ipRange [ inName "Center λ", inMin -3.7, inMax 0.5, inStep 0.05 ]) ]
+        << param "cenPhi" [ paValue (num 53), paBind (ipRange [ inName "Center 𝜙", inMin 50.5, inMax 55.5, inStep 0.05 ]) ]
+
     geoData =
       dataFromUrl topoJson
       [ topojsonFeature "lad" ]
@@ -44,7 +50,8 @@ ukChoropleth =
     proj =
       projection
         [ prType transverseMercator
-        , prRotate 2 0 0
+        , prCenterExpr "cenLambda" "cenPhi"
+        , prNumExpr "scale" prScale
         ]
 
     enc =
@@ -63,6 +70,7 @@ ukChoropleth =
     [ width 800
     , height 1000
     , geoData
+    , ps []
     , trans []
     , proj
     , enc []

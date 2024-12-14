@@ -20,6 +20,10 @@ dataCsv = "https://media.githubusercontent.com/media/Supermarcel10/CSG-IN3030/re
 ukChoropleth : Spec
 ukChoropleth =
   let
+    cfg =
+      configure
+        << configuration (coBackground "#06070E")
+
     ps =
       params
         << param "scale" [ paValue (num 8000), paBind (ipRange [ inName "Scale", inMin 8000, inMax 40000, inStep 1000 ]) ]
@@ -69,13 +73,15 @@ ukChoropleth =
   toVegaLite
     [ width 800
     , height 1000
+    , cfg []
     , geoData
     , ps []
     , trans []
     , proj
     , enc []
     , geoshape
-      [ maStroke "white"
+      [ maStroke "#2B3264"
       , maStrokeWidth 0.1
+      , maFill "#0C0E1D"
       ]
     ]

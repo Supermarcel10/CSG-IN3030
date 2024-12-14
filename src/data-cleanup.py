@@ -131,4 +131,4 @@ def cleanup_json(input_files: List[Union[str, Path]], output_file: Union[str, Pa
 
 if __name__ == "__main__":
     cleanup_csv("../data/RM080-2021-1.csv", "../data/minified-RM080-2021-1.csv")
-    cleanup_json(["../data/EN_topo.json", "../data/NI_topo.json", "../data/SC_topo.json", "../data/WL_topo.json"], "../data/combined-topo.json")
+    cleanup_json(["../data/EN_topo.json", "../data/WL_topo.json"], "../data/minified-topo.json")

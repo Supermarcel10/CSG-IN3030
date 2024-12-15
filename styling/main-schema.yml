@@ -1,0 +1,17 @@
+labels:
+  - name: visualizationBox
+    paired:
+      htmlTemplate: <div class="visualizationBox">{{children}}</fieldset></div>
+
+rules:
+  - description: Visualization box with background.
+    selector:
+      label: visualizationBox
+    minimumOccurrences: 1
+
+styling:
+  css: |
+    .visualizationBox {
+      color: #000;
+      background-color: #06070E;
+    }

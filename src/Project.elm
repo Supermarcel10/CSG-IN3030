@@ -85,11 +85,9 @@ ukChoropleth =
     ]
 
 
-combinedDashboard : Spec
-combinedDashboard =
+combinedDashboard : String -> Spec
+combinedDashboard desiredAuthority =
     let
-      desiredAuthority = "E06000001"
-
       cfg =
         configure
         << configuration (coView [ vicoStroke Nothing ])

@@ -15,3 +15,7 @@ styling:
       color: #000;
       background-color: #06070E;
     }
+
+    .vega-bind {
+      color: white;
+    }

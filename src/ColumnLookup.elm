@@ -56,10 +56,3 @@ calculateAsProficiencyLabel =
     'Main language not English: Cannot speak English well or at all'
     """
     "proficiency_label"
-
-getDeprivation : Int -> String
-getDeprivation value =
-    case value of
-        0 -> "Household is not deprived in the employment dimension"
-        1 -> "Household is deprived in the employment dimension"
-        _ -> ""

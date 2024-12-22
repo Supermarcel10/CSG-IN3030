@@ -1,4 +1,4 @@
-module Project exposing (ukChoropleth, englishProfPie, industryQualificationBars, deprivationStats)
+module Project exposing (ukChoropleth, combinedDashboard)
 
 import VegaLite exposing (..)
 import ColumnLookup exposing (..)
@@ -13,7 +13,6 @@ dataCsv = "https://media.githubusercontent.com/media/Supermarcel10/CSG-IN3030/re
 
 
 -- TODO: Search through the data to see why so many authorities are missing
--- TODO: Add selection
 
 -- GRAPHS
 ukChoropleth : Spec
@@ -86,30 +85,38 @@ ukChoropleth =
     ]
 
 
-englishProfPie : Spec
-englishProfPie =
-  let
-  -- TODO: Add interaction with this
+combinedDashboard : Spec
+combinedDashboard =
+    let
       desiredAuthority = "E06000001"
 
       cfg =
         configure
         << configuration (coView [ vicoStroke Nothing ])
         << configuration (coBackground "#06070E")
+        << configuration
+          (coText [ maColor "white" ])
+        << configuration
+          (coAxis [ axcoLabelColor "white", axcoTitleColor "white" ])
+        << configuration
+          (coLegend
+            [ lecoLabelColor "white"
+            , lecoTitleColor "white"
+            ]
+          )
 
-      data =
-        dataFromUrl dataCsv []
 
-      trans =
+      -- English Proficiency Pie Chart
+      profTrans =
         transform
         << filter (fiExpr ("datum.authority_id == '" ++ desiredAuthority ++ "'"))
         << calculateAsProficiencyLabel
 
-      enc =
+      profEnc =
         encoding
         << position Theta [ pName "count", pQuant ]
         << color
-          [ mName "proficiency_label"    
+          [ mName "proficiency_label"
           , mLegend []
           , mScale [ scRange (raStrs ["#2a9d8f", "#e9c46a", "#e76f51"]) ]
           ]
@@ -117,193 +124,154 @@ englishProfPie =
           [ tName "proficiency_label"
           , tNominal
           ]
-    in
-    toVegaLite
-    [ cfg []
-    , data
-    , trans []
-    , enc []
-    , arc [ maStrokeWidth 0 ]
-    ]
 
-
-industryQualificationBars : Spec
-industryQualificationBars =
-  let
-  -- TODO: Add interaction with this
-    desiredAuthority = "E06000001"
-
-    cfg =
-      configure
-      << configuration (coBackground "#06070E")
-      << configuration (coTitle [ ticoColor "white" ])
-      << configuration (coView [ vicoStroke Nothing ])
-      << configuration (coAxis [ axcoTitleColor "white", axcoLabelColor "white" ])
-      << configuration (coLegend [ lecoTitleColor "white", lecoLabelColor "white" ])
-      << configuration (coHeader [ hdLabelColor "white" ])
-
-    trans =
-      transform
-      << filter (fiExpr ("datum.authority_id == '" ++ desiredAuthority ++ "'"))
-      << calculateAs 
-        """
-        datum.qualification == 0 ? 'No qualifications' :
-        datum.qualification == 1 ? 'Level 1' :
-        datum.qualification == 2 ? 'Level 2' :
-        datum.qualification == 3 ? 'Level 3' :
-        datum.qualification == 4 ? 'Level 4' :
-        'Other qualifications'
-        """
-        "qualification_label"
-      << calculateAs
-        """
-        datum.industry == 1 ? 'A, B, D, E' :
-        datum.industry == 2 ? 'C' :
-        datum.industry == 3 ? 'F' :
-        datum.industry == 4 ? 'G, I' :
-        datum.industry == 5 ? 'H, J' :
-        datum.industry == 6 ? 'K, L, M, N' :
-        datum.industry == 7 ? 'O, P, Q' :
-        'R, S, T, U, Other'
-        """
-        "industry_code"
-      << calculateAs
-        """
-        datum.industry == 1 ? 'Agriculture, Energy & Water' :
-        datum.industry == 2 ? 'Manufacturing' :
-        datum.industry == 3 ? 'Construction' :
-        datum.industry == 4 ? 'Distribution & Hospitality' :
-        datum.industry == 5 ? 'Transport & Communication' :
-        datum.industry == 6 ? 'Financial, Real Estate, Professional & Administrative Activities' :
-        datum.industry == 7 ? 'Public Administration, Education & Health' :
-        'Other'
-        """
-        "industry_label"
-      << joinAggregate 
-        [ opAs opSum "count" "industry_total" ]
-        [ wiGroupBy [ "industry_label" ] ]
-      << calculateAs "datum.count/datum.industry_total * 100" "percentage"
-
-    sortOrder =
-      soCustom 
-        ( strs 
-          [ "No qualifications"
-          , "Level 1"
-          , "Level 2"
-          , "Level 3"
-          , "Level 4"
-          , "Other qualifications"
+      pieSpec =
+        asSpec
+          [ title "English Proficiency" [ tiColor "white", tiFontSize 16 ]
+          , width 300
+          , height 300
+          , data
+          , profTrans []
+          , profEnc []
+          , arc [ maStrokeWidth 0 ]
           ]
-        )
-
-    data =
-      dataFromUrl dataCsv []
-
-    enc =
-      encoding
-      << position X [ pName "count", pAggregate opSum, pTitle "Count" ]
-      << position Y
-        [ pName "industry_label"
-        , pTitle "Industry"
-        , pSort [ sortOrder ]
-        ]
-      << color
-        [ mName "industry_code"
-        , mTitle "Qualifications"
-        , mScale [ scRange (raStrs ["#e76f51", "#f4a261", "#e9c46a", "#2a9d8f", "#287271", "#aaaaaa"]) ]
-        , mSort [ sortOrder ]
-        ]
-      << tooltips
-        [ [ tName "qualification_label", tTitle "Qualification" ]
-        , [ tName "count", tAggregate opSum, tTitle "Count" ]
-        , [ tName "percentage", tFormat ".1f", tTitle "% of Industry" ]
-        ]
-  in
-  toVegaLite
-  [ data
-  , cfg []
-  , trans []
-  , enc []
-  , bar []
-  ]
 
 
-deprivationStats : Spec
-deprivationStats =
-    let
-        desiredAuthority = "E06000001"
-
-        -- Calculate total percentage in deprivation
-        overallTrans =
-          transform
+      -- Industry Qualification Bars
+      qualTrans =
+        transform
           << filter (fiExpr ("datum.authority_id == '" ++ desiredAuthority ++ "'"))
-          << aggregate
-            [ opAs opSum "count" "total_count" ]
-            [ "deprivation" ]
-          << joinAggregate
-            [ opAs opSum "total_count" "grand_total" ]
-            [ wiGroupBy [] ]
-          << filter (fiExpr "datum.deprivation == 1")
-          << calculateAs "datum.total_count / datum.grand_total * 100" "percent_deprived"
-
-
-        -- Transform for industry breakdown
-        industryTrans =
-          transform
-          << filter (fiExpr ("datum.authority_id == '" ++ desiredAuthority ++ "'"))
-          << aggregate
-            [ opAs opSum "count" "industry_total" ]
-            [ "industry", "deprivation" ]
-          << joinAggregate
-            [ opAs opSum "industry_total" "total_per_industry" ]
-            [ wiGroupBy [ "industry" ] ]
-          << filter (fiExpr "datum.deprivation == 1")
+          << calculateAsQualificationLabel
           << calculateAsIndustryCode
           << calculateAsIndustryLabel
-          << calculateAs "datum.industry_total / datum.total_per_industry * 100" "percent_deprived"
+          << joinAggregate
+            [ opAs opSum "count" "industry_total" ]
+            [ wiGroupBy [ "industry_label" ] ]
+          << calculateAs "datum.count/datum.industry_total * 100" "percentage"
 
-
-        -- Overall percentage text
-        textEnc =
-          encoding
-          << text [ tName "percent_deprived", tFormat ".2f" ]
-
-        textSpec =
-          asSpec
-            [ dataFromUrl dataCsv []
-            , overallTrans []
-            , textEnc []
-            , textMark [ maColor "white", maSize 48, maAlign haCenter, maBaseline vaMiddle ]
+      sortOrder =
+        soCustom
+          (strs
+            [ "No qualifications"
+            , "Level 1"
+            , "Level 2"
+            , "Level 3"
+            , "Level 4"
+            , "Other qualifications"
             ]
+          )
+
+      qualEnc =
+        encoding
+        << position X [ pName "count", pAggregate opSum, pTitle "Count" ]
+        << position Y
+          [ pName "industry_code"
+          , pTitle "Industry"
+          , pSort [ sortOrder ]
+          ]
+        << color
+          [ mName "qualification_label"
+          , mTitle "Qualifications"
+          , mScale [ scRange (raStrs ["#e76f51", "#f4a261", "#e9c46a", "#2a9d8f", "#287271", "#AAAAAA"]) ]
+          , mSort [ sortOrder ]
+          ]
+        << tooltips
+          [ [ tName "industry_label", tTitle "Industry" ]
+          , [ tName "qualification_label", tTitle "Qualification" ]
+          , [ tName "count", tAggregate opSum, tTitle "Count" ]
+          , [ tName "percentage", tFormat ".1f", tTitle "% of Industry" ]
+          ]
+
+      barsSpec =
+        asSpec
+          [ title "Industry Qualifications" [ tiColor "white", tiFontSize 16 ]
+          , width 600
+          , height 300
+          , data
+          , qualTrans []
+          , qualEnc []
+          , bar []
+          ]
 
 
-        -- Industry breakdown bars
-        barsEnc =
-          encoding
-          << position X [ pName "percent_deprived", pQuant, pTitle "% in Deprivation" ]
-          << position Y
-            [ pName "industry_code"
-            , pTitle "Industry"
-            ]
-          << color [ mStr "#e63946" ]
-          << tooltips
-            [ [ tName "industry_label", tTitle "Industry" ]
-            , [ tName "percent_deprived", tFormat ".2f", tTitle "% in Deprivation" ]
-            ]
+      -- Deprivation Stats
+      depOverallTrans =
+        transform
+        << filter (fiExpr ("datum.authority_id == '" ++ desiredAuthority ++ "'"))
+        << aggregate
+          [ opAs opSum "count" "total_count" ]
+          [ "deprivation" ]
+        << joinAggregate
+          [ opAs opSum "total_count" "grand_total" ]
+          [ wiGroupBy [] ]
+        << filter (fiExpr "datum.deprivation == 1")
+        << calculateAs "datum.total_count / datum.grand_total * 100" "percent_deprived"
 
-        barsSpec =
-          asSpec
-            [ dataFromUrl dataCsv []
-            , industryTrans []
-            , barsEnc []
-            , bar []
-            ]
+      depIndustryTrans =
+        transform
+        << filter (fiExpr ("datum.authority_id == '" ++ desiredAuthority ++ "'"))
+        << aggregate
+          [ opAs opSum "count" "industry_total" ]
+          [ "industry", "deprivation" ]
+        << joinAggregate
+          [ opAs opSum "industry_total" "total_per_industry" ]
+          [ wiGroupBy [ "industry" ] ]
+        << filter (fiExpr "datum.deprivation == 1")
+        << calculateAsIndustryCode
+        << calculateAsIndustryLabel
+        << calculateAs "datum.industry_total / datum.total_per_industry * 100" "percent_deprived"
 
+      textEnc =
+        encoding
+        << text [ tName "percent_deprived", tFormat ".2f" ]
+
+      textSpec =
+        asSpec
+          [ width 300
+          , height 100
+          , data
+          , depOverallTrans []
+          , textEnc []
+          , textMark [ maColor "white", maSize 48, maAlign haCenter, maBaseline vaMiddle ]
+          ]
+
+      depBarsEnc =
+        encoding
+        << position X [ pName "percent_deprived", pQuant, pTitle "% in Deprivation" ]
+        << position Y
+          [ pName "industry_code"
+          , pTitle "Industry"
+          ]
+        << color [ mStr "#e63946" ]
+        << tooltips
+          [ [ tName "industry_label", tTitle "Industry" ]
+          , [ tName "percent_deprived", tFormat ".2f", tTitle "% in Deprivation" ]
+          ]
+
+      depBarsSpec =
+        asSpec
+          [ width 300
+          , height 200
+          , data
+          , depIndustryTrans []
+          , depBarsEnc []
+          , bar []
+          ]
+
+      deprivationSpec =
+        asSpec
+          [ title "Deprivation Statistics" [ tiColor "white", tiFontSize 16 ]
+          , vConcat [ textSpec, depBarsSpec ]
+          ]
+
+      res =
+        resolve
+        << resolution (reLegend [ ( chColor, reIndependent ) ])
+        << resolution (reScale [ ( chColor, reIndependent ) ])
     in
     toVegaLite
-      [ vConcat
-        [ textSpec
-        , barsSpec
-        ]
-      , standardConfig
+      [ cfg []
+      , res []
+      , columns 2
+      , concat [ pieSpec, barsSpec, deprivationSpec ]
       ]
